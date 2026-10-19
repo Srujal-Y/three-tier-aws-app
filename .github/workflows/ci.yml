@@ -1,0 +1,32 @@
+name: Validate
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r app/api/requirements.txt
+      - run: python -m unittest discover -s tests -v
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '1.15.8'
+      - run: terraform -chdir=infra fmt -check -recursive
+      - run: terraform -chdir=infra init -backend=false
+      - run: terraform -chdir=infra validate
+      - run: terraform -chdir=infra test
+      - run: docker compose up --build -d --wait
+      - run: |
+          for attempt in $(seq 1 30); do
+            if python scripts/smoke.py; then exit 0; fi
+            sleep 5
+          done
+          exit 1
+      - run: python scripts/resilience.py
+      - if: always()
+        run: docker compose logs && docker compose down -v

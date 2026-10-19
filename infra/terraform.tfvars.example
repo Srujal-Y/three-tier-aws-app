@@ -1,0 +1,7 @@
+region = "us-east-1"
+name = "three-tier"
+environment = "dev"
+web_image = "ACCOUNT.dkr.ecr.us-east-1.amazonaws.com/three-tier-dev-web:RELEASE"
+api_image = "ACCOUNT.dkr.ecr.us-east-1.amazonaws.com/three-tier-dev-api:RELEASE"
+# certificate_arn = "arn:aws:acm:us-east-1:ACCOUNT:certificate/ID"
+# alarm_email = "you@example.com"
